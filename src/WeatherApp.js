@@ -91,14 +91,21 @@ const Cloudy = styled(CloudyIcon)`
   flex-basis: 30%;
 `;
 
-const Redo = styled(RedoIcon)`
-  /* 在這裡寫入 CSS 樣式 */
-  width: 15px;
-  height: 15px;
+const Redo = styled.div`
   position: absolute;
   right: 15px;
   bottom: 15px;
-  cursor: pointer;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: flex-end;
+  color: #828282;
+
+  svg {
+    margin-left: 10px;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
 `;
 
 const WeatherApp = () => {
@@ -116,7 +123,7 @@ const WeatherApp = () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.records.Station[0]);
+        console.log(data);
         // STEP 1：定義 `stationData` 把回傳的資料中會用到的部分取出來
         const stationData = data.records.Station[0];
 
@@ -139,13 +146,7 @@ const WeatherApp = () => {
     <Container>
       <WeatherCard>
         <Location theme="dark">{currentWeather.stationName}</Location>
-        <Description>
-          {new Intl.DateTimeFormat("zh-TW", {
-            hour: "numeric",
-            minute: "numeric",
-          }).format(new Date(currentWeather.observationTime))}{" "}
-          {currentWeather.description}
-        </Description>
+        <Description>{currentWeather.description}</Description>
         <CurrentWeather>
           <Temperature>
             {Math.round(currentWeather.temperature)} <Celsius>°C</Celsius>
@@ -160,7 +161,14 @@ const WeatherApp = () => {
           <RainIcon />
           {currentWeather.humid} %
         </Rain>
-        <Redo onClick={handleClick} />
+        <Redo onClick={handleClick}>
+          最後觀測時間：
+          {new Intl.DateTimeFormat("zh-TW", {
+            hour: "numeric",
+            minute: "numeric",
+          }).format(new Date(currentWeather.observationTime))}{" "}
+          <RedoIcon />
+        </Redo>
       </WeatherCard>
     </Container>
   );
