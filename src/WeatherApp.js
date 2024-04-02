@@ -108,7 +108,7 @@ const WeatherApp = () => {
     description: "多雲時晴",
     temperature: 27.5,
     windSpeed: 0.3,
-    humid: 0.88,
+    humid: 88,
   });
   const handleClick = () => {
     fetch(
@@ -158,7 +158,7 @@ const WeatherApp = () => {
         </AirFlow>
         <Rain>
           <RainIcon />
-          {currentWeather.humid * 100} %
+          {currentWeather.humid} %
         </Rain>
         <Redo onClick={handleClick} />
       </WeatherCard>
