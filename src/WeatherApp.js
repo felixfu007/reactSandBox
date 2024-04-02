@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "@emotion/styled";
 
 import { ReactComponent as CloudyIcon } from "./images/day-cloudy.svg";
@@ -102,26 +102,65 @@ const Redo = styled(RedoIcon)`
 `;
 
 const WeatherApp = () => {
+  const [currentWeather, setCurrentWeather] = useState({
+    observationTime: "2019-10-02 22:10:00",
+    stationName: "臺北市",
+    description: "多雲時晴",
+    temperature: 27.5,
+    windSpeed: 0.3,
+    humid: 0.88,
+  });
+  const handleClick = () => {
+    fetch(
+      "https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0001-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&StationName=%E4%B8%AD%E5%92%8C",
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.records.Station[0]);
+        // STEP 1：定義 `stationData` 把回傳的資料中會用到的部分取出來
+        const stationData = data.records.Station[0];
+
+        // STEP 2：將風速（WindSpeed）、氣溫（AirTemperature）和濕度（RelativeHumidity）的資料取出
+        const weatherElements = stationData.WeatherElement;
+
+        // STEP 3：要使用到 React 組件中的資料
+        setCurrentWeather({
+          observationTime: stationData.ObsTime.DateTime,
+          stationName: stationData.StationName,
+          description: "多雲時晴",
+          temperature: weatherElements.AirTemperature,
+          windSpeed: weatherElements.WindSpeed,
+          humid: weatherElements.RelativeHumidity,
+        });
+      });
+  };
+
   return (
     <Container>
       <WeatherCard>
-        <Location theme="dark">台北市</Location>
-        <Description>多雲時晴</Description>
+        <Location theme="dark">{currentWeather.stationName}</Location>
+        <Description>
+          {new Intl.DateTimeFormat("zh-TW", {
+            hour: "numeric",
+            minute: "numeric",
+          }).format(new Date(currentWeather.observationTime))}{" "}
+          {currentWeather.description}
+        </Description>
         <CurrentWeather>
           <Temperature>
-            23 <Celsius>°C</Celsius>
+            {Math.round(currentWeather.temperature)} <Celsius>°C</Celsius>
           </Temperature>
           <Cloudy />
         </CurrentWeather>
         <AirFlow>
           <AirFlowIcon />
-          23 m/h
+          {currentWeather.windSpeed} m/h
         </AirFlow>
         <Rain>
           <RainIcon />
-          48%
+          {currentWeather.humid * 100} %
         </Rain>
-        <Redo />
+        <Redo onClick={handleClick} />
       </WeatherCard>
     </Container>
   );
