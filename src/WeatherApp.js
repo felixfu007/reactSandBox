@@ -124,11 +124,21 @@ const WeatherApp = () => {
 
   useEffect(() => {
     console.log("execute function in useEffect");
-    fetchCurrentWeather();
-    fetchWeatherForecast();
+    const fetchData = async () => {
+      const [currentWeather, weatherForecast] = await Promise.all([
+        fetchCurrentWeather(),
+        fetchWeatherForecast(),
+      ]);
+      console.log("fetchData", fetchData);
+      setWeatherElement({
+        ...currentWeather,
+        ...weatherForecast,
+      });
+    };
+    fetchData();
   }, []);
   const fetchWeatherForecast = () => {
-    fetch(
+    return fetch(
       "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&locationName=%E8%87%BA%E5%8C%97%E5%B8%82",
     )
       .then((response) => response.json())
@@ -144,17 +154,16 @@ const WeatherApp = () => {
           },
           {},
         );
-        setWeatherElement((prevState) => ({
-          ...prevState,
+        return {
           description: weatherElements.Wx.parameterName,
           weatherCode: weatherElements.Wx.parameterValue,
           rainPossibility: weatherElements.PoP.parameterName,
           comfortability: weatherElements.CI.parameterName,
-        }));
+        };
       });
   };
   const fetchCurrentWeather = () => {
-    fetch(
+    return fetch(
       "https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0001-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&StationName=%E4%B8%AD%E5%92%8C",
     )
       .then((response) => response.json())
@@ -167,15 +176,14 @@ const WeatherApp = () => {
         const weatherElements = stationData.WeatherElement;
 
         // STEP 3：要使用到 React 組件中的資料
-        setWeatherElement((prevState) => ({
-          ...prevState,
+        return {
           observationTime: stationData.ObsTime.DateTime,
           stationName: stationData.StationName,
           description: "多雲時晴",
           temperature: weatherElements.AirTemperature,
           windSpeed: weatherElements.WindSpeed,
           humid: weatherElements.RelativeHumidity,
-        }));
+        };
       });
   };
 
