@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 //載入emotion的styled css工具
 import styled from "@emotion/styled";
+import WeatherIcon from "./WeatherIcon.js";
 
 //載入SVG圖片
 import { ReactComponent as CloudyIcon } from "./images/day-cloudy.svg";
@@ -86,11 +87,6 @@ const Rain = styled.div`
     height: auto;
     margin-right: 30px;
   }
-`;
-// 透過 styled component 來建立元件
-const Cloudy = styled(CloudyIcon)`
-  /* 在這裡寫入 CSS 樣式 */
-  flex-basis: 30%;
 `;
 
 const Redo = styled.div`
@@ -187,6 +183,7 @@ const WeatherApp = () => {
         ...weatherForecast,
       });
     };
+    fetchingData();
   }, []);
 
   //載入頁面時執行，但若該方法會需要被共用，則把該方法提到 useEffect 外面
@@ -209,7 +206,7 @@ const WeatherApp = () => {
           <Temperature>
             {Math.round(weatherElement.temperature)} <Celsius>°C</Celsius>
           </Temperature>
-          <Cloudy />
+          <WeatherIcon />
         </CurrentWeather>
         <AirFlow>
           <AirFlowIcon />
