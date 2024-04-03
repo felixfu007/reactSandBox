@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+//載入emotion的styled css工具
 import styled from "@emotion/styled";
 
+//載入SVG圖片
 import { ReactComponent as CloudyIcon } from "./images/day-cloudy.svg";
 import { ReactComponent as AirFlowIcon } from "./images/airFlow.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
@@ -85,7 +87,7 @@ const Rain = styled.div`
     margin-right: 30px;
   }
 `;
-
+// 透過 styled component 來建立元件
 const Cloudy = styled(CloudyIcon)`
   /* 在這裡寫入 CSS 樣式 */
   flex-basis: 30%;
@@ -107,9 +109,57 @@ const Redo = styled.div`
     cursor: pointer;
   }
 `;
+//fetch api 並回傳promise
+const fetchWeatherForecast = () => {
+  return fetch(
+    "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&locationName=%E8%87%BA%E5%8C%97%E5%B8%82",
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      const locationData = data.records.location[0];
+      const weatherElements = locationData.weatherElement.reduce(
+        (neededElements, item) => {
+          if (["Wx", "PoP", "CI"].indexOf(item.elementName) !== -1) {
+            neededElements[item.elementName] = item.time[0].parameter;
+          }
+          return neededElements;
+        },
+        {},
+      );
+      return {
+        description: weatherElements.Wx.parameterName,
+        weatherCode: weatherElements.Wx.parameterValue,
+        rainPossibility: weatherElements.PoP.parameterName,
+        comfortability: weatherElements.CI.parameterName,
+      };
+    });
+};
+
+//fetch api 並回傳promise
+const fetchCurrentWeather = () => {
+  return fetch(
+    "https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0001-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&StationName=%E4%B8%AD%E5%92%8C",
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      const stationData = data.records.Station[0];
+      const weatherElements = stationData.WeatherElement;
+      return {
+        observationTime: stationData.ObsTime.DateTime,
+        stationName: stationData.StationName,
+        description: "多雲時晴",
+        temperature: weatherElements.AirTemperature,
+        windSpeed: weatherElements.WindSpeed,
+        humid: weatherElements.RelativeHumidity,
+      };
+    });
+};
 
 const WeatherApp = () => {
   console.log("invoke function component");
+  //初始值
   const [weatherElement, setWeatherElement] = useState({
     observationTime: new Date(),
     locationName: "",
@@ -121,71 +171,31 @@ const WeatherApp = () => {
     rainPossibility: 0,
     comfortability: "",
   });
-
-  useEffect(() => {
-    console.log("execute function in useEffect");
-    const fetchData = async () => {
+  //如果某個函式不需要被覆用，那麼可以直接定義在 useEffect 中，但若該方法會需要被共用，則把該方法提到 useEffect 外面後，記得用 useCallback 進行處理後再放到 useEffect 的 dependencies 中
+  const fetchData = useCallback(() => {
+    const fetchingData = async () => {
+      //非同步呼叫兩隻API
       const [currentWeather, weatherForecast] = await Promise.all([
         fetchCurrentWeather(),
         fetchWeatherForecast(),
       ]);
-      console.log("fetchData", fetchData);
+      console.log("currentWeather", currentWeather);
+      console.log("weatherForecast", weatherForecast);
+      //設定WeatherElement並刷新頁面
       setWeatherElement({
         ...currentWeather,
         ...weatherForecast,
       });
     };
-    fetchData();
   }, []);
-  const fetchWeatherForecast = () => {
-    return fetch(
-      "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&locationName=%E8%87%BA%E5%8C%97%E5%B8%82",
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        const locationData = data.records.location[0];
-        const weatherElements = locationData.weatherElement.reduce(
-          (neededElements, item) => {
-            if (["Wx", "PoP", "CI"].indexOf(item.elementName) !== -1) {
-              neededElements[item.elementName] = item.time[0].parameter;
-            }
-            return neededElements;
-          },
-          {},
-        );
-        return {
-          description: weatherElements.Wx.parameterName,
-          weatherCode: weatherElements.Wx.parameterValue,
-          rainPossibility: weatherElements.PoP.parameterName,
-          comfortability: weatherElements.CI.parameterName,
-        };
-      });
-  };
-  const fetchCurrentWeather = () => {
-    return fetch(
-      "https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0001-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&StationName=%E4%B8%AD%E5%92%8C",
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        // STEP 1：定義 `stationData` 把回傳的資料中會用到的部分取出來
-        const stationData = data.records.Station[0];
 
-        // STEP 2：將風速（WindSpeed）、氣溫（AirTemperature）和濕度（RelativeHumidity）的資料取出
-        const weatherElements = stationData.WeatherElement;
-
-        // STEP 3：要使用到 React 組件中的資料
-        return {
-          observationTime: stationData.ObsTime.DateTime,
-          stationName: stationData.StationName,
-          description: "多雲時晴",
-          temperature: weatherElements.AirTemperature,
-          windSpeed: weatherElements.WindSpeed,
-          humid: weatherElements.RelativeHumidity,
-        };
-      });
-  };
+  //載入頁面時執行，但若該方法會需要被共用，則把該方法提到 useEffect 外面
+  //因為fetchData是外部函式，所以需要放進depandencies陣列中
+  //當depandencies陣列中的物件(函式)有變化時，就會重新渲染頁面
+  useEffect(() => {
+    console.log("execute function in useEffect");
+    fetchData();
+  }, [fetchData]);
 
   return (
     <Container>
@@ -209,7 +219,7 @@ const WeatherApp = () => {
           <RainIcon />
           {weatherElement.rainPossibility} %
         </Rain>
-        <Redo onClick={fetchCurrentWeather}>
+        <Redo onClick={fetchData}>
           最後觀測時間：
           {new Intl.DateTimeFormat("zh-TW", {
             hour: "numeric",
