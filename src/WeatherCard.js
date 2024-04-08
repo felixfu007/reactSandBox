@@ -8,6 +8,18 @@ import { ReactComponent as AirFlowIcon } from "./images/airFlow.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
 import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
 import { ReactComponent as LoadingIcon } from "./images/loading.svg";
+//"設定"的ICON圖
+import { ReactComponent as CogIcon } from "./images/cog.svg";
+
+// 為 CogIcon 添加樣式
+const Cog = styled(CogIcon)`
+  position: absolute;
+  top: 30px;
+  right: 15px;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+`;
 
 const WeatherCardWrapper = styled.div`
   position: relative;
@@ -114,7 +126,7 @@ const Refresh = styled.div`
 //在參數中帶入 props 即可取得外層組件傳入的資料
 const WeatherCard = (props) => {
   //透過物件的解構賦值從 props 中取出傳入的資料
-  const { weatherElement, moment, fetchData } = props;
+  const { weatherElement, moment, fetchData, setCurrentPage } = props;
   // 將 weatherElement 中的資料透過解構賦值取出後，放置到 JSX 中使用
   const {
     observationTime,
@@ -131,6 +143,8 @@ const WeatherCard = (props) => {
 
   return (
     <WeatherCardWrapper>
+      {/*當齒輪被點擊的時候，將 currentPage 改成 WeatherSetting */}
+      <Cog onClick={() => setCurrentPage("WeatherSetting")} />
       <Location theme="dark">{stationName}</Location>
       <Description>
         {description} {comfortability}

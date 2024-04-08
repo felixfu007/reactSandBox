@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 //載入自定義的 React Hooks useWeatherApi
 import useWeatherApi from "./useWeatherApi";
+import WeatherSetting from "./WeatherSetting";
 // 從 @emotion/react 中載入 ThemeProvider
 import { ThemeProvider } from "@emotion/react";
 //載入emotion的styled css工具
@@ -79,6 +80,10 @@ const getMoment = (stationName) => {
 
 const WeatherApp = () => {
   console.log("invoke function component");
+
+  // 定義 currentPage 這個 state，預設值是 WeatherCard
+  const [currentPage, setCurrentPage] = useState("WeatherCard");
+
   // 使用 useWeatherApi Hook 後就能取得 weatherElement 和 fetchData 這兩個方法
   const [weatherElement, fetchData] = useWeatherApi();
   const { stationName } = weatherElement;
@@ -99,11 +104,19 @@ const WeatherApp = () => {
     // 將當前選到的主題配色傳入 `theme` 中
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
-        <WeatherCard
-          weatherElement={weatherElement}
-          moment={moment}
-          fetchData={fetchData}
-        />
+        {/* STEP 2：利用條件渲染的方式決定要呈現哪個組件 */}
+        {currentPage === "WeatherCard" && (
+          <WeatherCard
+            weatherElement={weatherElement}
+            moment={moment}
+            fetchData={fetchData}
+            setCurrentPage={setCurrentPage}
+          />
+        )}
+        {/* STEP 2：使用 WeatherSetting */}
+        {currentPage === "WeatherSetting" && (
+          <WeatherSetting setCurrentPage={setCurrentPage} />
+        )}
       </Container>
     </ThemeProvider>
   );
