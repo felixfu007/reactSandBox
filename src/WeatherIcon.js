@@ -67,6 +67,7 @@ const weatherCode2Type = (weatherCode) => {
     Object.entries(weatherTypes).find(([weatherType, weatherCodes]) =>
       weatherCodes.includes(Number(weatherCode)),
     ) || [];
+    console.log("weatherType", weatherType);
   return weatherType;
 };
 

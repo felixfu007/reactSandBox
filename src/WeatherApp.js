@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+// 從 @emotion/react 中載入 ThemeProvider
+import { ThemeProvider } from "@emotion/react";
 //載入emotion的styled css工具
 import styled from "@emotion/styled";
 import WeatherIcon from "./WeatherIcon.js";
@@ -11,8 +13,29 @@ import { ReactComponent as RainIcon } from "./images/rain.svg";
 import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
 import { ReactComponent as LoadingIcon } from "./images/loading.svg";
 
+const theme = {
+  light: {
+    backgroundColor: "#ededed",
+    foregroundColor: "#f9f9f9",
+    boxShadow: "0 1px 3px 0 #999999",
+    titleColor: "#212121",
+    temperatureColor: "#757575",
+    textColor: "#828282",
+  },
+  dark: {
+    backgroundColor: "#1F2022",
+    foregroundColor: "#121416",
+    boxShadow:
+      "0 1px 4px 0 rgba(12, 12, 13, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.15)",
+    titleColor: "#f9f9fa",
+    temperatureColor: "#dddddd",
+    textColor: "#cccccc",
+  },
+};
+
 const Container = styled.div`
-  background-color: #ededed;
+  /* 在 Styled Component 中可以透過 Props 取得對的顏色 */
+  background-color: ${({ theme }) => theme.backgroundColor};
   height: 100%;
   display: flex;
   align-items: center;
@@ -22,8 +45,8 @@ const Container = styled.div`
 const WeatherCard = styled.div`
   position: relative;
   min-width: 360px;
-  box-shadow: 0 1px 3px 0 #999999;
-  background-color: #f9f9f9;
+  box-shadow: ${({ theme }) => theme.boxShadow};
+  background-color: ${({ theme }) => theme.foregroundColor};
   box-sizing: border-box;
   padding: 30px 15px;
 `;
@@ -33,13 +56,13 @@ const WeatherCard = styled.div`
 // 透過傳進來的資料決定要呈現的樣式
 const Location = styled.div`
   font-size: 28px;
-  color: ${(props) => (props.theme === "dark" ? "#dadada" : "#212121")};
+  color: ${({ theme }) => theme.titleColor};
   margin-bottom: 20px;
 `;
 
 const Description = styled.div`
   font-size: 16px;
-  color: #828282;
+  color: ${({ theme }) => theme.textColor};
   margin-bottom: 30px;
 `;
 
@@ -51,7 +74,7 @@ const CurrentWeather = styled.div`
 `;
 
 const Temperature = styled.div`
-  color: #757575;
+  color: ${({ theme }) => theme.temperatureColor};
   font-size: 96px;
   font-weight: 300;
   display: flex;
@@ -67,7 +90,7 @@ const AirFlow = styled.div`
   align-items: center;
   font-size: 16x;
   font-weight: 300;
-  color: #828282;
+  color: ${({ theme }) => theme.textColor};
   margin-bottom: 20px;
 
   svg {
@@ -82,7 +105,7 @@ const Rain = styled.div`
   align-items: center;
   font-size: 16x;
   font-weight: 300;
-  color: #828282;
+  color: ${({ theme }) => theme.textColor};
 
   svg {
     width: 25px;
@@ -98,7 +121,7 @@ const Refresh = styled.div`
   font-size: 12px;
   display: inline-flex;
   align-items: flex-end;
-  color: #828282;
+  color: ${({ theme }) => theme.textColor};
 
   svg {
     margin-left: 10px;
@@ -169,12 +192,11 @@ const fetchCurrentWeather = () => {
     });
 };
 
-const getMoment = (locationName) => {
+const getMoment = (stationName) => {
   // STEP 2：從日出日落時間中找出符合的地區
   const location = sunriseAndSunsetData.find(
-    (data) => data.locationName === locationName,
+    (data) => data.locationName === stationName,
   );
-
   // STEP 3：找不到的話則回傳 null
   if (!location) return null;
 
@@ -214,7 +236,7 @@ const WeatherApp = () => {
   //初始值
   const [weatherElement, setWeatherElement] = useState({
     observationTime: new Date(),
-    locationName: "",
+    stationName: "",
     humid: 0,
     temperature: 0,
     windSpeed: 0,
@@ -227,7 +249,7 @@ const WeatherApp = () => {
 
   const {
     observationTime,
-    locationName,
+    stationName,
     temperature,
     windSpeed,
     description,
@@ -237,11 +259,10 @@ const WeatherApp = () => {
     isLoading,
   } = weatherElement;
 
-  const moment = useMemo(
-    () => getMoment(weatherElement.locationName),
-    [weatherElement.locationName],
-  );
+  //使用 useState 並定義 currentTheme 的預設值為 light
+  const [currentTheme, setCurrentTheme] = useState("light");
 
+  const moment = useMemo(() => getMoment(stationName), [stationName]);
   //如果某個函式不需要被覆用，那麼可以直接定義在 useEffect 中，但若該方法會需要被共用，則把該方法提到 useEffect 外面後，記得用 useCallback 進行處理後再放到 useEffect 的 dependencies 中
   const fetchData = useCallback(() => {
     const fetchingData = async () => {
@@ -276,44 +297,55 @@ const WeatherApp = () => {
     fetchData();
   }, [fetchData]);
 
+  // 根據 moment 決定要使用亮色或暗色主題
+  useEffect(() => {
+    setCurrentTheme(moment === "day" ? "light" : "dark");
+    // 記得把 moment 放入 dependencies 中
+  }, [moment]);
+
   return (
-    <Container>
-      {console.log(weatherElement.isLoading)}
-      {console.log("render")}
-      <WeatherCard>
-        <Location theme="dark">{weatherElement.stationName}</Location>
-        <Description>
-          {weatherElement.description} {weatherElement.comfortability}
-        </Description>
-        <CurrentWeather>
-          <Temperature>
-            {Math.round(weatherElement.temperature)} <Celsius>°C</Celsius>
-          </Temperature>
-          <WeatherIcon
-            currentWeatherCode={weatherElement.weatherCode}
-            moment={moment || "day"}
-          />
-        </CurrentWeather>
-        <AirFlow>
-          <AirFlowIcon />
-          {weatherElement.windSpeed} m/h
-        </AirFlow>
-        <Rain>
-          <RainIcon />
-          {weatherElement.rainPossibility} %
-        </Rain>
-        {/* 把 isLoading 的資料狀態透過 props 傳入 Styled Component */}
-        <Refresh onClick={fetchData} isLoading={weatherElement.isLoading}>
-          最後觀測時間：
-          {new Intl.DateTimeFormat("zh-TW", {
-            hour: "numeric",
-            minute: "numeric",
-          }).format(new Date(weatherElement.observationTime))}{" "}
-          {/* STEP 2：當 isLoading 的時候顯示 LoadingIcon 否則顯示 RefreshIcon */}
-          {weatherElement.isLoading ? <LoadingIcon /> : <RefreshIcon />}
-        </Refresh>
-      </WeatherCard>
-    </Container>
+    // 把所有會用到主題配色的部分都包在 ThemeProvider 內
+    // 透過 theme 這個 props 傳入深色主題
+    // 將當前選到的主題配色傳入 `theme` 中
+    <ThemeProvider theme={theme[currentTheme]}>
+      <Container>
+        {console.log(isLoading)}
+        {console.log("render")}
+        <WeatherCard>
+          <Location theme="dark">{stationName}</Location>
+          <Description>
+            {description} {comfortability}
+          </Description>
+          <CurrentWeather>
+            <Temperature>
+              {Math.round(temperature)} <Celsius>°C</Celsius>
+            </Temperature>
+            <WeatherIcon
+              currentWeatherCode={weatherCode}
+              moment={moment || "day"}
+            />
+          </CurrentWeather>
+          <AirFlow>
+            <AirFlowIcon />
+            {windSpeed} m/h
+          </AirFlow>
+          <Rain>
+            <RainIcon />
+            {rainPossibility} %
+          </Rain>
+          {/* 把 isLoading 的資料狀態透過 props 傳入 Styled Component */}
+          <Refresh onClick={fetchData} isLoading={isLoading}>
+            最後觀測時間：
+            {new Intl.DateTimeFormat("zh-TW", {
+              hour: "numeric",
+              minute: "numeric",
+            }).format(new Date(observationTime))}{" "}
+            {/* STEP 2：當 isLoading 的時候顯示 LoadingIcon 否則顯示 RefreshIcon */}
+            {isLoading ? <LoadingIcon /> : <RefreshIcon />}
+          </Refresh>
+        </WeatherCard>
+      </Container>
+    </ThemeProvider>
   );
 };
 
