@@ -8,7 +8,8 @@ import sunriseAndSunsetData from "./sunrise-sunset.json";
 import { ReactComponent as CloudyIcon } from "./images/day-cloudy.svg";
 import { ReactComponent as AirFlowIcon } from "./images/airFlow.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
-import { ReactComponent as RedoIcon } from "./images/refresh.svg";
+import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
+import { ReactComponent as LoadingIcon } from "./images/loading.svg";
 
 const Container = styled.div`
   background-color: #ededed;
@@ -90,7 +91,7 @@ const Rain = styled.div`
   }
 `;
 
-const Redo = styled.div`
+const Refresh = styled.div`
   position: absolute;
   right: 15px;
   bottom: 15px;
@@ -104,6 +105,20 @@ const Redo = styled.div`
     width: 15px;
     height: 15px;
     cursor: pointer;
+    /* 使用 rotate 動畫效果在 svg 圖示上 */
+    animation: rotate infinite 1.5s linear;
+    /* 取得傳入的 props 並根據它來決定動畫要不要執行 */
+    animation-duration: ${({ isLoading }) => (isLoading ? "1.5s" : "0s")};
+  }
+
+  /* STEP 1：定義旋轉的動畫效果，並取名為 rotate */
+  @keyframes rotate {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
   }
 `;
 //fetch api 並回傳promise
@@ -207,7 +222,20 @@ const WeatherApp = () => {
     weatherCode: 0,
     rainPossibility: 0,
     comfortability: "",
+    isLoading: true,
   });
+
+  const {
+    observationTime,
+    locationName,
+    temperature,
+    windSpeed,
+    description,
+    weatherCode,
+    rainPossibility,
+    comfortability,
+    isLoading,
+  } = weatherElement;
 
   const moment = useMemo(
     () => getMoment(weatherElement.locationName),
@@ -228,8 +256,15 @@ const WeatherApp = () => {
       setWeatherElement({
         ...currentWeather,
         ...weatherForecast,
+        isLoading: false,
       });
     };
+
+    setWeatherElement((prevState) => ({
+      ...prevState,
+      isLoading: true,
+    }));
+
     fetchingData();
   }, []);
 
@@ -243,6 +278,7 @@ const WeatherApp = () => {
 
   return (
     <Container>
+      {console.log(weatherElement.isLoading)}
       {console.log("render")}
       <WeatherCard>
         <Location theme="dark">{weatherElement.stationName}</Location>
@@ -266,14 +302,16 @@ const WeatherApp = () => {
           <RainIcon />
           {weatherElement.rainPossibility} %
         </Rain>
-        <Redo onClick={fetchData}>
+        {/* 把 isLoading 的資料狀態透過 props 傳入 Styled Component */}
+        <Refresh onClick={fetchData} isLoading={weatherElement.isLoading}>
           最後觀測時間：
           {new Intl.DateTimeFormat("zh-TW", {
             hour: "numeric",
             minute: "numeric",
           }).format(new Date(weatherElement.observationTime))}{" "}
-          <RedoIcon />
-        </Redo>
+          {/* STEP 2：當 isLoading 的時候顯示 LoadingIcon 否則顯示 RefreshIcon */}
+          {weatherElement.isLoading ? <LoadingIcon /> : <RefreshIcon />}
+        </Refresh>
       </WeatherCard>
     </Container>
   );
