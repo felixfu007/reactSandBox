@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 //fetch api 並回傳promise
 const fetchWeatherForecast = () => {
   return fetch(
-    "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&locationName=%E8%87%BA%E5%8C%97%E5%B8%82",
+    "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-72D15255-A2E4-4B35-A2D4-7C01FCAFD816&locationName=%E6%96%B0%E5%8C%97%E5%B8%82",
   )
     .then((response) => response.json())
     .then((data) => {
