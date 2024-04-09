@@ -1,5 +1,6 @@
 {
   "name": "react",
+  "homepage": "https://felixfu007.github.io/reactSandBox",
   "version": "1.0.0",
   "description": "",
   "keywords": [],
@@ -9,6 +10,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "11.11.5",
     "emotion": "11.0.0",
+    "gh-pages": "^6.1.1",
     "normalize.css": "^8.0.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
@@ -21,6 +23,8 @@
     "typescript": "4.4.4"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
