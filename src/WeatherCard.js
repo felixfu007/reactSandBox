@@ -145,7 +145,7 @@ const WeatherCard = (props) => {
     <WeatherCardWrapper>
       {/*當齒輪被點擊的時候，將 currentPage 改成 WeatherSetting */}
       <Cog onClick={() => setCurrentPage("WeatherSetting")} />
-      <Location theme="dark">{stationName}</Location>
+      <Location theme="dark">{locationName}</Location>
       <Description>
         {description} {comfortability}
       </Description>

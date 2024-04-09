@@ -83,9 +83,11 @@ const WeatherApp = () => {
 
   // 定義 currentPage 這個 state，預設值是 WeatherCard
   const [currentPage, setCurrentPage] = useState("WeatherCard");
-
+  const storageCity = localStorage.getItem("cityName");
+  // 若 storageCity 存在則作為 currentCity 的預設值，否則使用 '新北市'
+  const [saveName, setSaveName] = useState(storageCity || "新北市");
   // 使用 useWeatherApi Hook 後就能取得 weatherElement 和 fetchData 這兩個方法
-  const [weatherElement, fetchData] = useWeatherApi();
+  const [weatherElement, fetchData] = useWeatherApi(saveName);
   const { stationName } = weatherElement;
   //使用 useState 並定義 currentTheme 的預設值為 light
   const [currentTheme, setCurrentTheme] = useState("light");
@@ -115,7 +117,12 @@ const WeatherApp = () => {
         )}
         {/* STEP 2：使用 WeatherSetting */}
         {currentPage === "WeatherSetting" && (
-          <WeatherSetting setCurrentPage={setCurrentPage} />
+          <WeatherSetting
+            cityName={saveName}
+            // STEP 7：把 setCurrentCity 傳入，讓 WeatherSetting 可以修改 currentCity
+            setCurrentPage={setCurrentPage}
+            setSaveName={setSaveName}
+          />
         )}
       </Container>
     </ThemeProvider>

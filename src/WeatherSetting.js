@@ -113,11 +113,10 @@ const locations = [
 ];
 
 // 從 props 中取出 setCurrentPage 方法
-const WeatherSetting = ({ setCurrentPage }) => {
-  const [locationName, setLocationName] = useState("中和");
+const WeatherSetting = ({ setCurrentPage, cityName, setSaveName }) => {
+  const [locationName, setLocationName] = useState(cityName);
   const handleChange = (e) => {
     console.log(e.target.value);
-
     //把使用者輸入的內容更新到 React 內的資料狀態
     setLocationName(e.target.value);
   };
@@ -127,12 +126,14 @@ const WeatherSetting = ({ setCurrentPage }) => {
     // 透過 inputLocationRef.current 可以指稱到該 input 元素
     // 透過 inputLocationRef.current.value 即可取得該 input 元素的值
     const locationName = inputLocationRef.current.value;
-    console.log(locationName);
     // 判斷使用者填寫的地區是否包含在 locations 陣列內
     if (locations.includes(locationName)) {
-      // TODO: 儲存地區資訊...
+      //因為兩隻API查詢條件差異太大，所以僅儲存地區名稱
+      //不實作隨著設定更改API的功能
+      localStorage.setItem("cityName", locationName);
       console.log(`儲存的地區資訊為：${locationName}`);
 
+      setSaveName(locationName);
       // 透過 setCurrentPage 導回天氣資訊頁
       setCurrentPage("WeatherCard");
     } else {
