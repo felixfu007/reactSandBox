@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import styled from "@emotion/styled";
 
 const WeatherSettingWrapper = styled.div`
@@ -114,11 +114,48 @@ const locations = [
 
 // 從 props 中取出 setCurrentPage 方法
 const WeatherSetting = ({ setCurrentPage }) => {
+  const [locationName, setLocationName] = useState("中和");
+  const handleChange = (e) => {
+    console.log(e.target.value);
+
+    //把使用者輸入的內容更新到 React 內的資料狀態
+    setLocationName(e.target.value);
+  };
+  // 使用 useRef 建立一個 ref，取名為 inputLocationRef
+  const inputLocationRef = useRef(null);
+  const handleSave = () => {
+    // 透過 inputLocationRef.current 可以指稱到該 input 元素
+    // 透過 inputLocationRef.current.value 即可取得該 input 元素的值
+    const locationName = inputLocationRef.current.value;
+    console.log(locationName);
+    // 判斷使用者填寫的地區是否包含在 locations 陣列內
+    if (locations.includes(locationName)) {
+      // TODO: 儲存地區資訊...
+      console.log(`儲存的地區資訊為：${locationName}`);
+
+      // 透過 setCurrentPage 導回天氣資訊頁
+      setCurrentPage("WeatherCard");
+    } else {
+      // 若不包含在 locations 內，則顯示錯誤提示
+      alert(`儲存失敗：您輸入的 ${locationName} 並非有效的地區`);
+      return;
+    }
+  };
+
   return (
     <WeatherSettingWrapper>
       <Title>設定</Title>
       <StyledLabel htmlFor="location">地區</StyledLabel>
-      <StyledInputList list="location-list" id="location" name="location" />
+      {/* 將 useRef 回傳的物件，指稱為該 input 元素 */}
+      {/* 在 uncontrolled components 中可以使用 defaultValue 定義預設值 */}
+      <StyledInputList
+        list="location-list"
+        id="location"
+        name="location"
+        onChange={handleChange}
+        ref={inputLocationRef}
+        defaultValue="中和"
+      />
       <datalist id="location-list">
         {/* 定義 datalist 中的 options*/}
         {/* 利用迴圈的方式跑出所有 option */}
@@ -130,7 +167,7 @@ const WeatherSetting = ({ setCurrentPage }) => {
       <ButtonGroup>
         {/*：呼叫 setCurrentPage 方法來換頁 */}
         <Back onClick={() => setCurrentPage("WeatherCard")}>返回</Back>
-        <Save>儲存</Save>
+        <Save onClick={handleSave}>儲存</Save>
       </ButtonGroup>
     </WeatherSettingWrapper>
   );
